@@ -25,6 +25,8 @@ class VimeoBlock(XBlock):
     watched = Integer(help="How many times the student has watched it?",
                       default=0, scope=Scope.user_state)
 
+    icon_class = 'video'
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
