@@ -4,7 +4,7 @@ function VimeoEditBlock(runtime, element) {
     var data = {
       href: $(element).find('input[name=href]').val(),
       width: $(element).find('input[name=width]').val(),
-      height: $(element).find('input[name=height]').val()
+      height: $(element).find('input[name=height]').val(),
       display_name: $(element).find('input[name=display_name]').val()
     };
     $.post(handlerUrl, JSON.stringify(data)).done(function(response) {
