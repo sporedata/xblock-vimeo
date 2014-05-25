@@ -16,7 +16,7 @@ def package_data(pkg, root):
 
 setup(
     name='vimeo-xblock',
-    version='0.1',
+    version='0.2',
     description='Vimeo XBlock',
     packages=[
         'vimeo',
