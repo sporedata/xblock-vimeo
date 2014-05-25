@@ -3,8 +3,8 @@ function VimeoEditBlock(runtime, element) {
     var handlerUrl = runtime.handlerUrl(element, 'studio_submit');
     var data = {
       href: $(element).find('input[name=href]').val(),
-      maxwidth: $(element).find('input[name=maxwidth]').val(),
-      maxheight: $(element).find('input[name=maxheight]').val()
+      width: $(element).find('input[name=width]').val(),
+      height: $(element).find('input[name=height]').val()
     };
     $.post(handlerUrl, JSON.stringify(data)).done(function(response) {
       window.location.reload(false);

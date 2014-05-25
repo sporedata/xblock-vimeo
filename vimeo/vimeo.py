@@ -18,10 +18,10 @@ class VimeoBlock(XBlock):
 
     href = String(help="URL of the video page at the provider", default=None,
                   scope=Scope.content)
-    maxwidth = Integer(help="Maximum width of the video", default=800,
-                       scope=Scope.content)
-    maxheight = Integer(help="Maximum height of the video", default=450,
-                        scope=Scope.content)
+    width = Integer(help="Width of the video", default=800,
+                    scope=Scope.content)
+    height = Integer(help="Height of the video", default=511,
+                     scope=Scope.content)
     watched = Integer(help="How many times the student has watched it?",
                       default=0, scope=Scope.user_state)
     display_name = String(
@@ -65,8 +65,8 @@ class VimeoBlock(XBlock):
         """
         html_str = self.resource_string("static/html/vimeo_edit.html")
         href = self.href or ''
-        frag = Fragment(unicode(html_str).format(href=href,
-                        maxwidth=self.maxwidth, maxheight=self.maxheight))
+        frag = Fragment(unicode(html_str).format(href=href, width=self.width,
+                                                 height=self.height))
 
         js_str = self.resource_string("static/js/src/vimeo_edit.js")
         frag.add_javascript(unicode(js_str))
@@ -82,8 +82,8 @@ class VimeoBlock(XBlock):
         params = {
             'url': url,
             'format': 'json',
-            'maxwidth': self.maxwidth,
-            'maxheight': self.maxheight
+            'width': self.width,
+            'height': self.height
         }
 
         if hostname == 'vimeo.com':
@@ -107,8 +107,8 @@ class VimeoBlock(XBlock):
         Called when submitting the form in Studio.
         """
         self.href = data.get('href')
-        self.maxwidth = data.get('maxwidth')
-        self.maxheight = data.get('maxheight')
+        self.width = data.get('width')
+        self.height = data.get('height')
 
         return {'result': 'success'}
 
@@ -131,7 +131,7 @@ class VimeoBlock(XBlock):
             ("vimeo",
             """\
                 <vertical_demo>
-                    <vimeo href="https://vimeo.com/96321771" maxwidth="800" />
+                    <vimeo href="https://vimeo.com/96321771" width="800" />
                 </vertical_demo>
             """)
         ]
