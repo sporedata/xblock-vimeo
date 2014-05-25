@@ -1,3 +1,6 @@
+{% if self.display_name %}
+<h2>{{self.display_name}}</h2>
+{% endif %}
 <div class="vimeo">
-  {embed_code}
+  {{embed_code|safe}}
 </div>

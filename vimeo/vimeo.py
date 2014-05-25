@@ -7,8 +7,26 @@ from urlparse import urlparse
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String
 from xblock.fragment import Fragment
+from django.template import Context, Template
 
 log = logging.getLogger(__name__)
+
+
+def load_resource(resource_path):
+    """
+    Gets the content of a resource
+    """
+    resource_content = pkg_resources.resource_string(__name__, resource_path)
+    return unicode(resource_content)
+
+
+def render_template(template_path, context={}):
+    """
+    Evaluate a template by resource path, applying the provided context
+    """
+    template_str = load_resource(template_path)
+    template = Template(template_str)
+    return template.render(Context(context))
 
 
 class VimeoBlock(XBlock):
@@ -43,9 +61,11 @@ class VimeoBlock(XBlock):
         """
         provider, embed_code = self.get_embed_code_for_url(self.href)
 
-        html_str = self.resource_string("static/html/vimeo.html")
-        frag = Fragment(unicode(html_str).format(self=self,
-                        embed_code=embed_code))
+        context = {
+            'self': 'self',
+            'embed_code': embed_code
+        }
+        frag = Fragment(render_template('static/html/vimeo.html', context))
 
         css_str = self.resource_string("static/css/vimeo.css")
         frag.add_css(unicode(css_str))
@@ -66,7 +86,8 @@ class VimeoBlock(XBlock):
         html_str = self.resource_string("static/html/vimeo_edit.html")
         href = self.href or ''
         frag = Fragment(unicode(html_str).format(href=href, width=self.width,
-                                                 height=self.height))
+                                                 height=self.height,
+                                                 display_name=self.display_name))
 
         js_str = self.resource_string("static/js/src/vimeo_edit.js")
         frag.add_javascript(unicode(js_str))
@@ -109,6 +130,7 @@ class VimeoBlock(XBlock):
         self.href = data.get('href')
         self.width = data.get('width')
         self.height = data.get('height')
+        self.display_name = data.get('display_name')
 
         return {'result': 'success'}
 
