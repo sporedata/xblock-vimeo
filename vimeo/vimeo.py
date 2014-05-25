@@ -62,7 +62,7 @@ class VimeoBlock(XBlock):
         provider, embed_code = self.get_embed_code_for_url(self.href)
 
         context = {
-            'self': 'self',
+            'self': self,
             'embed_code': embed_code
         }
         frag = Fragment(render_template('static/html/vimeo.html', context))
