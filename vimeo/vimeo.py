@@ -24,6 +24,10 @@ class VimeoBlock(XBlock):
                         scope=Scope.content)
     watched = Integer(help="How many times the student has watched it?",
                       default=0, scope=Scope.user_state)
+    display_name = String(
+        display_name="Display Name", help="Display name for this block.",
+        default="Vimeo",
+        scope=Scope.settings)
 
     icon_class = 'video'
 
