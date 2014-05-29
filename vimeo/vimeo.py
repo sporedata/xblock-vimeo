@@ -1,15 +1,28 @@
 import logging
-
+import datetime
 import pkg_resources
 import requests
 
 from urlparse import urlparse
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer, String
+from xblock.fields import Scope, Field, Integer, String
 from xblock.fragment import Fragment
 from django.template import Context, Template
 
 log = logging.getLogger(__name__)
+
+class DateTuple(Field):
+    """
+    Field that stores datetime objects as time tuples
+    """
+    def from_json(self, value):
+        return datetime.datetime(*value[0:6])
+
+    def to_json(self, value):
+        if value is None:
+            return None
+
+        return list(value.timetuple())
 
 
 def load_resource(resource_path):
