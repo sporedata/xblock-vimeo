@@ -47,6 +47,11 @@ class VimeoBlock(XBlock):
         default="Vimeo",
         scope=Scope.settings)
 
+    # Workaround to edX CMS
+    published_date = DateTuple(help="Date when the module was published", scope=Scope.settings)
+    published_by = Integer(help="Id of the user who published this module", scope=Scope.settings)
+
+
     icon_class = 'video'
 
     def resource_string(self, path):
