@@ -10,7 +10,7 @@ See [edX Installing an XBlock](http://edx.readthedocs.io/projects/edx-installing
 for details on how to install this XBlock on your Open edX instance.
 
 ```python
-pip install "git+https://github.com/sporedata/xblock-vimeo@master#egg=xblock-vimeo"
+pip install "git+https://github.com/open-craft/xblock-vimeo@master#egg=xblock-vimeo"
 ```
 
 Usage
