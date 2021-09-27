@@ -1,8 +1,8 @@
+import sys
 import logging
 import pkg_resources
 import requests
 
-from urlparse import urlparse
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String
 from xblock.fragment import Fragment
@@ -10,23 +10,18 @@ from django.template import Context, Template
 
 log = logging.getLogger(__name__)
 
-
-def load_resource(resource_path):
+def isPython27():
     """
-    Gets the content of a resource
+    Checks if it is Python 2.7 or Not
     """
-    resource_content = pkg_resources.resource_string(__name__, resource_path)
-    return unicode(resource_content)
+    return (sys.version_info[0] < 3)
 
+if isPython27():
+    from urlparse import urlparse
+else:
+    from urllib.parse import urlparse
 
-def render_template(template_path, context={}):
-    """
-    Evaluate a template by resource path, applying the provided context
-    """
-    template_str = load_resource(template_path)
-    template = Template(template_str)
-    return template.render(Context(context))
-
+    unicode = str
 
 class VimeoBlock(XBlock):
     """
@@ -48,10 +43,57 @@ class VimeoBlock(XBlock):
 
     icon_class = 'video'
 
+    unsupported_error_msg = "Unsupported video provider"
+    exception_error_msg = "Error getting video from provider"
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
+
+    def load_resource(self, path):
+        """
+        Gets Content of a Resource and Encodes it to UTF-8 For Python 2.7
+        """
+        resource_content = pkg_resources.resource_string(__name__, resource_path)
+        return unicode(resource_content)
+
+    def create_fragment(self, html, context={}, js=[], css=[], initialize=None):
+        """
+        Create an XBlock Fragment
+
+        Creates an XBlock Fragment given an HTML file path, 
+        an optional Context, optional JS file paths, optional CSS file paths,
+        and an optional Initialize JS value
+
+        Arguments:
+            html (str): HTML File Path
+            context (dict): Optional Context for HTML File
+            js (list): Optional List of JS File Paths
+            css (list): Optional List of CSS File Paths
+            initialize (str): Optional Initialize Value for JS
+
+        Returns:
+            Fragment 
+        """
+        if isPython27():
+            html_str = self.load_resource(html)
+        else:
+            html_str = self.resource_string(html)
+        html = Template(html_str)
+
+        frag = Fragment(html.render(Context(context)))
+
+        for stylesheet in css:
+            frag.add_css(self.resource_string(stylesheet))
+
+        for script in js:
+            frag.add_javascript(self.resource_string(script))
+
+        if initialize:
+            frag.initialize_js(initialize)
+
+        return frag
 
     def student_view(self, context=None):
         """
@@ -61,38 +103,60 @@ class VimeoBlock(XBlock):
         provider, embed_code = self.get_embed_code_for_url(self.href)
 
         context = {
-            'self': self,
+            'display_name': self.display_name,
             'embed_code': embed_code
         }
-        frag = Fragment(render_template('static/html/vimeo.html', context))
 
-        css_str = self.resource_string("static/css/vimeo.css")
-        frag.add_css(unicode(css_str))
+        html_file = "static/html/vimeo.html"
 
-        if provider == 'vimeo.com':
-            js_str = self.resource_string("static/js/lib/froogaloop.min.js")
-            frag.add_javascript(unicode(js_str))
-            js_str = self.resource_string("static/js/src/vimeo.js")
-            frag.add_javascript(unicode(js_str))
-            frag.initialize_js('VimeoBlock')
+        css_stylesheets = [
+            "static/css/vimeo.css",
+        ]
 
-        return frag
+        if provider == "vimeo.com":
+            js_scripts = [
+                "static/js/lib/froogaloop.min.js",
+                "static/js/src/vimeo.js",
+            ]
+
+            initialize_value = "VimeoBlock"
+
+            return self.create_fragment(html_file,
+                context=context,
+                js=js_scripts,
+                css=css_stylesheets,
+                initialize=initialize_value
+            )
+        else:
+            return self.create_fragment(html_file,
+                context=context,
+                css=css_stylesheets
+            )
 
     def studio_view(self, context):
         """
         Create a fragment used to display the edit view in the Studio.
         """
-        html_str = self.resource_string("static/html/vimeo_edit.html")
-        href = self.href or ''
-        frag = Fragment(unicode(html_str).format(href=href, width=self.width,
-                                                 height=self.height,
-                                                 display_name=self.display_name))
+        context = {
+            'href': self.href or '',
+            'width': self.width,
+            'height': self.height,
+            'display_name': self.display_name
+        }
 
-        js_str = self.resource_string("static/js/src/vimeo_edit.js")
-        frag.add_javascript(unicode(js_str))
-        frag.initialize_js('VimeoEditBlock')
+        html_file = "static/html/vimeo_edit.html"
 
-        return frag
+        js_scripts = [
+            "static/js/src/vimeo_edit.js",
+        ]
+
+        initialize_value = "VimeoEditBlock"
+
+        return self.create_fragment(html_file,
+            context=context,
+            js=js_scripts,
+            initialize=initialize_value
+        )
 
     def get_embed_code_for_url(self, url):
         """
@@ -110,13 +174,19 @@ class VimeoBlock(XBlock):
             oembed_url = 'http://vimeo.com/api/oembed.json'
             params['api'] = True
         else:
-            return hostname, '<p>Unsupported video provider ({0})</p>'.format(hostname)
+            return hostname, '<p>{message} ({hostname})</p>'.format(
+                message=self.unsupported_error_msg, 
+                hostname=hostname
+            )
 
         try:
             r = requests.get(oembed_url, params=params)
             r.raise_for_status()
         except Exception as e:
-            return hostname, '<p>Error getting video from provider ({error})</p>'.format(error=e)
+            return hostname, '<p>{message} ({error})</p>'.format(
+                message=self.exception_error_msg,
+                error=e
+            )
         response = r.json()
 
         return hostname, response['html']
