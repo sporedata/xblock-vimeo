@@ -5,10 +5,11 @@ This XBlock allows course creators to stream videos from [Vimeo](https://vimeo.c
 
 Support
 -------
-| Open edX Release | Tag |
-|:-----------------|:---:|
-| Juniper | v0.5 |
-| Ironwood | v0.5 |
+| Open edX Release |  Tag |
+|:-----------------|:----:|
+| Lilac            | v0.5 |
+| Juniper          | v0.5 |
+| Ironwood         | v0.5 |
 
 > ###### Tested on Python 3.5, 3.8. Manually tested on Python 2.7.
 
@@ -37,7 +38,8 @@ Testing
 -----
 
 1. Make sure you have `tox` installed.
-2. Run the tox tests using the `tox` command.
+2. Create and activate a virtualenv environment for the [python version](tox.ini) you want to test.
+3. Run the tox tests using the `tox` command.
 
 Installing on DevStack
 -----
@@ -45,6 +47,6 @@ Installing on DevStack
 1. Start your *edX devstack*
 2. Once the *edX devstack* is up, run `make studio-shell`
 3. `source ../venvs/edxapp/bin/activate`
-4. `sudo -u edxapp /edx/bin/pip.edxapp install "git+https://github.com/open-craft/xblock-vimeo@nizar/juniper_upgrade#egg=xblock-vimeo"`
+4. `pip install "git+https://github.com/open-craft/xblock-vimeo@master#egg=xblock-vimeo"`
 5. `docker-compose restart studio`
-6. Repeat steps 2 till 5 using `lms` instead of `studio`, ei `make lms-shell` and `docker-compose restart lms`.
+6. Repeat steps 2 till 5 using `lms` instead of `studio`, that is `make lms-shell` and `docker-compose restart lms`.
